@@ -28,6 +28,8 @@
 bool GTickTriggered;                  // true if a 2ms tick has been triggered
 
 
+
+
 //
 // counter clocked by CK/8 (0.5us)
 // note this is faster than I've used in other sketches because timer 8 set to run 8x faster
@@ -55,6 +57,8 @@ void setup()
   Wire.setClock(400000);
 
   delay(1000);
+
+
 //
 // configure I/O pins
 //

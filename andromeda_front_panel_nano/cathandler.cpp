@@ -17,6 +17,10 @@
 #include "led.h"
 #include <stdlib.h>
 
+// global variables
+bool DiversityActive = false;                 // true if diversity is active
+bool ShiftActive = false;                     // true if Shift button is active
+int RitXitActive = 0;                         // true if RIT or XIT is active
 
 //
 // clip to numerical limits allowed for a given message type
@@ -63,6 +67,16 @@ void CATHandleEncoder(byte Encoder, char Clicks)
 {
   int Param;
 
+  // Unless we are using diversity or rit/xit change encoder number to allow other functionality
+  if (Encoder == 6 && !DiversityActive)
+    Encoder = 13;
+  else if (Encoder == 7 && !DiversityActive)
+    Encoder = 14;
+  else if (Encoder == 8 && !RitXitActive)
+    Encoder = 15;
+  else if (Encoder == 9 && !RitXitActive)
+    Encoder = 16;
+
   if (Clicks > 0)                           // clockwise turn, non zero clicks
   {
     if (Clicks > 9)                         // clip value at max 9 clicks
@@ -92,11 +106,26 @@ void CATHandlePushbutton(byte Button, bool IsPressed, bool IsLongPressed)
 {
   int Param;
 
+  // Reuse encoder buttons that does not exist when shift is pressed
+  if (ShiftActive && (Button > 20 && Button < 29)) 
+      Button = Button - 8;  
+  
   Param = (Button) * 10;                // get to param if unpressed
-  if (IsLongPressed)
+  if (IsLongPressed) {
     Param += 2;
-  else if (IsPressed)
+
+  } else if (IsPressed) {
+    if (Button == 7) 
+        DiversityActive = !DiversityActive;
+    else if (Button == 42) 
+      RitXitActive = (RitXitActive + 1) % 3;
+    else if (Button == 29)
+        ShiftActive = !ShiftActive;
+    
     Param += 1;
+  } else if (Button != 29)
+    ShiftActive = false;
+    
   MakeCATMessageNumeric(eZZZP, Param);
 }
 
